@@ -1,0 +1,18 @@
+rsddd
+{
+	base		realism
+	maxplayers	4
+
+	DisplayTitle		"Realism Special Delivery Death's Door"
+	ShortDescription	"The ultimate Special Delivery experience."
+	Description			"Two of the best mutations and mode now combined for an even more challenging experience!"
+	Author				"Jack Bauer ︻デ▬—"
+	Image				vgui/rsddd
+
+	convar
+	{
+		hud_deathnotice_threats 1
+		z_female_boomer_spawn_chance 50
+		survivor_max_incapacitated_count 0
+	}
+}

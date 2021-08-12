@@ -1,0 +1,14 @@
+AddonInfo
+{
+	addonSteamAppID		550
+	addonTitle			"Special Delivery Death's Door"
+	addonVersion		1.0
+	addonAuthor			"Jack Bauer ︻デ▬—"
+	addonAuthorSteamID	76561198046359406
+	addonSteamGroupName	Flemis
+	addonURL0			
+	addonContent_Script	1
+	addonDescription	"Special Delivery now with Death's Door features and Realism (optional).
+
+These mutations were put together aiming to be as authentic as possible to the original ones. The only conflict is with the default items: although Death's Door uses dual pistols, the magnum from Special Delivery was chosen since it's the principal mutation."
+}
