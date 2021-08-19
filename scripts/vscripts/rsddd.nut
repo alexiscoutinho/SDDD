@@ -1,30 +1,30 @@
 //-----------------------------------------------------
-Msg("Activating Realism Special Delivery Death's Door\n");
+printl("Activating Realism Special Delivery Death's Door")
 
 if (!IsModelPrecached("models/infected/smoker.mdl"))
-	PrecacheModel("models/infected/smoker.mdl");
+	PrecacheModel("models/infected/smoker.mdl")
 if (!IsModelPrecached("models/infected/smoker_l4d1.mdl"))
-	PrecacheModel("models/infected/smoker_l4d1.mdl");
+	PrecacheModel("models/infected/smoker_l4d1.mdl")
 if (!IsModelPrecached("models/infected/boomer.mdl"))
-	PrecacheModel("models/infected/boomer.mdl");
+	PrecacheModel("models/infected/boomer.mdl")
 if (!IsModelPrecached("models/infected/boomer_l4d1.mdl"))
-	PrecacheModel("models/infected/boomer_l4d1.mdl");
+	PrecacheModel("models/infected/boomer_l4d1.mdl")
 if (!IsModelPrecached("models/infected/boomette.mdl"))
-	PrecacheModel("models/infected/boomette.mdl");
+	PrecacheModel("models/infected/boomette.mdl")
 if (!IsModelPrecached("models/infected/hunter.mdl"))
-	PrecacheModel("models/infected/hunter.mdl");
+	PrecacheModel("models/infected/hunter.mdl")
 if (!IsModelPrecached("models/infected/hunter_l4d1.mdl"))
-	PrecacheModel("models/infected/hunter_l4d1.mdl");
+	PrecacheModel("models/infected/hunter_l4d1.mdl")
 if (!IsModelPrecached("models/infected/limbs/exploded_boomette.mdl")) {
-	PrecacheModel("models/infected/limbs/exploded_boomette.mdl");
-	::community1_no_female_boomers <- true;
+	PrecacheModel("models/infected/limbs/exploded_boomette.mdl")
+	::community1_no_female_boomers <- true
 }
 if (!IsModelPrecached("models/infected/spitter.mdl"))
-	PrecacheModel("models/infected/spitter.mdl");
+	PrecacheModel("models/infected/spitter.mdl")
 if (!IsModelPrecached("models/infected/jockey.mdl"))
-	PrecacheModel("models/infected/jockey.mdl");
+	PrecacheModel("models/infected/jockey.mdl")
 if (!IsModelPrecached("models/infected/charger.mdl"))
-	PrecacheModel("models/infected/charger.mdl");
+	PrecacheModel("models/infected/charger.mdl")
 
 MutationOptions <- {
 	ActiveChallenge = 1
@@ -64,8 +64,8 @@ MutationOptions <- {
 
 	function ConvertWeaponSpawn(classname) {
 		if (classname in weaponsToConvert)
-			return weaponsToConvert[classname];
-		return 0;
+			return weaponsToConvert[classname]
+		return 0
 	}
 
 	DefaultItems = [
@@ -74,8 +74,8 @@ MutationOptions <- {
 
 	function GetDefaultItem(idx) {
 		if (idx < DefaultItems.len())
-			return DefaultItems[idx];
-		return 0;
+			return DefaultItems[idx]
+		return 0
 	}
 
 	TempHealthDecayRate = 0.001
@@ -109,133 +109,132 @@ MutationState <- {
 }
 
 function LeftSafeAreaThink() {
-	local player = null;
+	local player = null
 	while (player = Entities.FindByClassname(player, "player")) {
 		if (!player.IsValid() || NetProps.GetPropInt(player, "m_iTeamNum") != 2)
-			continue;
+			continue
 
 		if (ResponseCriteria.GetValue(player, "instartarea") == "0") {
-			SessionOptions.cm_MaxSpecials = 8;
-			SessionState.LeftSafeAreaThink = false;
-			break;
+			SessionOptions.cm_MaxSpecials = 8
+			SessionState.LeftSafeAreaThink = false
+			break
 		}
 	}
 }
 
 function OnGameEvent_round_start_post_nav(params) {
-	local spawner = null;
+	local spawner = null
 	while (spawner = Entities.FindByClassname(spawner, "info_zombie_spawn")) {
 		if (spawner.IsValid()) {
-			local population = NetProps.GetPropString(spawner, "m_szPopulation");
+			local population = NetProps.GetPropString(spawner, "m_szPopulation")
 
 			if (population == "boomer" || population == "hunter" || population == "smoker" || population == "jockey"
 				|| population == "charger" || population == "spitter" || population == "new_special" || population == "church"
 				|| population == "tank" || population == "witch" || population == "witch_bride" || population == "river_docks_trap")
-				continue;
+				continue
 			else
-				spawner.Kill();
+				spawner.Kill()
 		}
 	}
 
 	if (Director.GetMapName() == "c1m1_hotel")
-		DirectorOptions.cm_TankLimit <- 0;
+		DirectorOptions.cm_TankLimit <- 0
 	else if (Director.GetMapName() == "c5m5_bridge" || Director.GetMapName() == "c6m3_port")
-		DirectorOptions.cm_MaxSpecials = 0;
+		DirectorOptions.cm_MaxSpecials = 0
 	else if (Director.GetMapName() == "c7m1_docks")
-		DirectorOptions.cm_ProhibitBosses = true;
+		DirectorOptions.cm_ProhibitBosses = true
 }
 
 function OnGameEvent_player_left_safe_area(params) {
-	local player = GetPlayerFromUserID(params["userid"]);
+	local player = GetPlayerFromUserID(params["userid"])
 	if (!player)
-		return;
+		return
 
-	local instartarea = ResponseCriteria.GetValue(player, "instartarea");
-	if (instartarea == "1") {
-		SessionOptions.cm_MaxSpecials = 0;
-		SessionState.LeftSafeAreaThink = true;
+	if (ResponseCriteria.GetValue(player, "instartarea") == "1") {
+		SessionOptions.cm_MaxSpecials = 0
+		SessionState.LeftSafeAreaThink = true
 	}
 }
 
 function OnGameEvent_triggered_car_alarm(params) {
 	if (!Director.IsTankInPlay()) {
-		DirectorOptions.cm_AggressiveSpecials = true;
-		ZSpawn({type = 8});
-		DirectorOptions.cm_AggressiveSpecials = false;
+		DirectorOptions.cm_AggressiveSpecials = true
+		ZSpawn({type = 8})
+		DirectorOptions.cm_AggressiveSpecials = false
 	}
 
-	StartAssault();
+	StartAssault()
 }
 
 function OnGameEvent_finale_start(params) {
 	if (Director.GetMapName() == "c6m3_port")
-		DirectorOptions.cm_MaxSpecials = 8;
+		DirectorOptions.cm_MaxSpecials = 8
 }
 
 function OnGameEvent_gauntlet_finale_start(params) {
 	if (Director.GetMapName() == "c5m5_bridge")
-		DirectorOptions.cm_MaxSpecials = 8;
+		DirectorOptions.cm_MaxSpecials = 8
 }
 
 function OnGameEvent_player_spawn(params) {
-	local player = GetPlayerFromUserID(params["userid"]);
+	local player = GetPlayerFromUserID(params["userid"])
 
 	if (!player || player.IsSurvivor())
-		return;
+		return
 
-	local zombieType = player.GetZombieType();
+	local zombieType = player.GetZombieType()
 	if (zombieType > 6)
-		return;
+		return
 
-	local modelName = player.GetModelName();
+	local modelName = player.GetModelName()
 
 	if (!SessionState.ModelCheck[zombieType - 1]) {
 		if (zombieType == 2 && !("community1_no_female_boomers" in getroottable())) {
 			if (SessionState.LastBoomerModel != modelName) {
-				SessionState.LastBoomerModel = modelName;
-				SessionState.BoomersChecked++;
+				SessionState.LastBoomerModel = modelName
+				SessionState.BoomersChecked++
 			}
 			if (SessionState.BoomersChecked > 1)
-				SessionState.ModelCheck[zombieType - 1] = true;
+				SessionState.ModelCheck[zombieType - 1] = true
 		}
 		else
-			SessionState.ModelCheck[zombieType - 1] = true;
+			SessionState.ModelCheck[zombieType - 1] = true
 
 		if (SessionState.SIModelsBase[zombieType - 1].find(modelName) == null) {
-			SessionState.SIModelsBase[zombieType - 1].append(modelName);
-			SessionState.SIModels[zombieType - 1].append(modelName);
+			SessionState.SIModelsBase[zombieType - 1].append(modelName)
+			SessionState.SIModels[zombieType - 1].append(modelName)
 		}
 	}
 
 	if (SessionState.SIModelsBase[zombieType - 1].len() == 1)
-		return;
+		return
 
-	local zombieModels = SessionState.SIModels[zombieType - 1];
+	local zombieModels = SessionState.SIModels[zombieType - 1]
 	if (zombieModels.len() == 0)
-		SessionState.SIModels[zombieType - 1].extend(SessionState.SIModelsBase[zombieType - 1]);
-	local foundModel = zombieModels.find(modelName);
+		SessionState.SIModels[zombieType - 1].extend(SessionState.SIModelsBase[zombieType - 1])
+	local foundModel = zombieModels.find(modelName)
 	if (foundModel != null) {
-		zombieModels.remove(foundModel);
-		return;
+		zombieModels.remove(foundModel)
+		return
 	}
 
-	local randomElement = RandomInt(0, zombieModels.len() - 1);
-	local randomModel = zombieModels[randomElement];
-	zombieModels.remove(randomElement);
+	local randomElement = RandomInt(0, zombieModels.len() - 1)
+	local randomModel = zombieModels[randomElement]
+	zombieModels.remove(randomElement)
 
-	player.SetModel(randomModel);
+	player.SetModel(randomModel)
 }
 
 function Update() {
 	if (SessionState.LeftSafeAreaThink)
-		LeftSafeAreaThink();
+		LeftSafeAreaThink()
 	if (Director.GetCommonInfectedCount() > 0) {
-		local infected = null;
+		local infected = null
 		while (infected = Entities.FindByClassname(infected, "infected")) {
 			if (infected.IsValid())
-				infected.Kill();
+				infected.Kill()
 		}
 	}
 
-	SessionOptions.RecalculateHealthDecay();
+	SessionOptions.RecalculateHealthDecay()
 }

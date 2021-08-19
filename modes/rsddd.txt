@@ -6,7 +6,7 @@ rsddd
 	DisplayTitle		"Realism Special Delivery Death's Door"
 	ShortDescription	"The ultimate Special Delivery experience."
 	Description			"Two of the best mutations and mode now combined for an even more challenging experience!"
-	Author				"Jack Bauer ︻デ▬—"
+	Author				"Jack Bauer ︻デ▬— and ℜichard"
 	Image				vgui/rsddd
 
 	convar
