@@ -1,4 +1,3 @@
-//-----------------------------------------------------
 printl("Activating Realism Special Delivery Death's Door")
 
 if (!IsModelPrecached("models/infected/smoker.mdl"))
@@ -51,9 +50,9 @@ MutationOptions <- {
 	JockeyLimit = 2
 	ChargerLimit = 2
 
-	cm_ShouldHurry = 1
-	cm_AllowPillConversion = 0
-	cm_AllowSurvivorRescue = 0
+	cm_ShouldHurry = true
+	cm_AllowPillConversion = false
+	cm_AllowSurvivorRescue = false
 	SurvivorMaxIncapacitatedCount = 0
 
 	weaponsToConvert = {
@@ -62,9 +61,9 @@ MutationOptions <- {
 		weapon_adrenaline = "weapon_pain_pills_spawn"
 	}
 
-	function ConvertWeaponSpawn(classname) {
+	function ConvertWeaponSpawn( classname ) {
 		if (classname in weaponsToConvert)
-			return weaponsToConvert[classname]
+			return weaponsToConvert[ classname ]
 		return 0
 	}
 
@@ -72,9 +71,9 @@ MutationOptions <- {
 		"weapon_pistol_magnum",
 	]
 
-	function GetDefaultItem(idx) {
+	function GetDefaultItem( idx ) {
 		if (idx < DefaultItems.len())
-			return DefaultItems[idx]
+			return DefaultItems[ idx ]
 		return 0
 	}
 
@@ -109,12 +108,11 @@ MutationState <- {
 }
 
 function LeftSafeAreaThink() {
-	local player = null
-	while (player = Entities.FindByClassname(player, "player")) {
-		if (!player.IsValid() || NetProps.GetPropInt(player, "m_iTeamNum") != 2)
+	for (local player; player = Entities.FindByClassname( player, "player" );) {
+		if (NetProps.GetPropInt( player, "m_iTeamNum" ) != 2)
 			continue
 
-		if (ResponseCriteria.GetValue(player, "instartarea") == "0") {
+		if (ResponseCriteria.GetValue( player, "instartarea" ) == "0") {
 			SessionOptions.cm_MaxSpecials = 8
 			SessionState.LeftSafeAreaThink = false
 			break
@@ -122,19 +120,16 @@ function LeftSafeAreaThink() {
 	}
 }
 
-function OnGameEvent_round_start_post_nav(params) {
-	local spawner = null
-	while (spawner = Entities.FindByClassname(spawner, "info_zombie_spawn")) {
-		if (spawner.IsValid()) {
-			local population = NetProps.GetPropString(spawner, "m_szPopulation")
+function OnGameEvent_round_start_post_nav( params ) {
+	for (local spawner; spawner = Entities.FindByClassname( spawner, "info_zombie_spawn" );) {
+		local population = NetProps.GetPropString( spawner, "m_szPopulation" )
 
-			if (population == "boomer" || population == "hunter" || population == "smoker" || population == "jockey"
-				|| population == "charger" || population == "spitter" || population == "new_special" || population == "church"
-				|| population == "tank" || population == "witch" || population == "witch_bride" || population == "river_docks_trap")
-				continue
-			else
-				spawner.Kill()
-		}
+		if (population == "boomer" || population == "hunter" || population == "smoker" || population == "jockey"
+			|| population == "charger" || population == "spitter" || population == "new_special" || population == "church"
+			|| population == "tank" || population == "witch" || population == "witch_bride" || population == "river_docks_trap")
+			continue
+		else
+			spawner.Kill()
 	}
 
 	if (Director.GetMapName() == "c1m1_hotel")
@@ -145,39 +140,39 @@ function OnGameEvent_round_start_post_nav(params) {
 		DirectorOptions.cm_ProhibitBosses = true
 }
 
-function OnGameEvent_player_left_safe_area(params) {
-	local player = GetPlayerFromUserID(params["userid"])
+function OnGameEvent_player_left_safe_area( params ) {
+	local player = GetPlayerFromUserID( params.userid )
 	if (!player)
 		return
 
-	if (ResponseCriteria.GetValue(player, "instartarea") == "1") {
+	if (ResponseCriteria.GetValue( player, "instartarea" ) == "1") {
 		SessionOptions.cm_MaxSpecials = 0
 		SessionState.LeftSafeAreaThink = true
 	}
 }
 
-function OnGameEvent_triggered_car_alarm(params) {
+function OnGameEvent_triggered_car_alarm( params ) {
 	if (!Director.IsTankInPlay()) {
 		DirectorOptions.cm_AggressiveSpecials = true
-		ZSpawn({type = 8})
+		ZSpawn( {type = 8} )
 		DirectorOptions.cm_AggressiveSpecials = false
 	}
 
 	StartAssault()
 }
 
-function OnGameEvent_finale_start(params) {
+function OnGameEvent_finale_start( params ) {
 	if (Director.GetMapName() == "c6m3_port")
 		DirectorOptions.cm_MaxSpecials = 8
 }
 
-function OnGameEvent_gauntlet_finale_start(params) {
+function OnGameEvent_gauntlet_finale_start( params ) {
 	if (Director.GetMapName() == "c5m5_bridge")
 		DirectorOptions.cm_MaxSpecials = 8
 }
 
-function OnGameEvent_player_spawn(params) {
-	local player = GetPlayerFromUserID(params["userid"])
+function OnGameEvent_player_spawn( params ) {
+	local player = GetPlayerFromUserID( params.userid )
 
 	if (!player || player.IsSurvivor())
 		return
@@ -188,52 +183,91 @@ function OnGameEvent_player_spawn(params) {
 
 	local modelName = player.GetModelName()
 
-	if (!SessionState.ModelCheck[zombieType - 1]) {
+	if (!SessionState.ModelCheck[ zombieType - 1 ]) {
 		if (zombieType == 2 && !("community1_no_female_boomers" in getroottable())) {
 			if (SessionState.LastBoomerModel != modelName) {
 				SessionState.LastBoomerModel = modelName
 				SessionState.BoomersChecked++
 			}
 			if (SessionState.BoomersChecked > 1)
-				SessionState.ModelCheck[zombieType - 1] = true
+				SessionState.ModelCheck[ zombieType - 1 ] = true
 		}
 		else
-			SessionState.ModelCheck[zombieType - 1] = true
+			SessionState.ModelCheck[ zombieType - 1 ] = true
 
-		if (SessionState.SIModelsBase[zombieType - 1].find(modelName) == null) {
-			SessionState.SIModelsBase[zombieType - 1].append(modelName)
-			SessionState.SIModels[zombieType - 1].append(modelName)
+		if (SessionState.SIModelsBase[ zombieType - 1 ].find( modelName ) == null) {
+			SessionState.SIModelsBase[ zombieType - 1 ].append( modelName )
+			SessionState.SIModels[ zombieType - 1 ].append( modelName )
 		}
 	}
 
-	if (SessionState.SIModelsBase[zombieType - 1].len() == 1)
+	if (SessionState.SIModelsBase[ zombieType - 1 ].len() == 1)
 		return
 
-	local zombieModels = SessionState.SIModels[zombieType - 1]
+	local zombieModels = SessionState.SIModels[ zombieType - 1 ]
 	if (zombieModels.len() == 0)
-		SessionState.SIModels[zombieType - 1].extend(SessionState.SIModelsBase[zombieType - 1])
-	local foundModel = zombieModels.find(modelName)
+		SessionState.SIModels[ zombieType - 1 ].extend( SessionState.SIModelsBase[ zombieType - 1 ] )
+	local foundModel = zombieModels.find( modelName )
 	if (foundModel != null) {
-		zombieModels.remove(foundModel)
+		zombieModels.remove( foundModel )
 		return
 	}
 
-	local randomElement = RandomInt(0, zombieModels.len() - 1)
-	local randomModel = zombieModels[randomElement]
-	zombieModels.remove(randomElement)
+	local randomElement = RandomInt( 0, zombieModels.len() - 1 )
+	local randomModel = zombieModels[ randomElement ]
+	zombieModels.remove( randomElement )
 
-	player.SetModel(randomModel)
+	player.SetModel( randomModel )
+}
+
+function OnGameEvent_player_hurt_concise( params ) {
+	local player = GetPlayerFromUserID( params.userid )
+
+	if (!player || !player.IsSurvivor())
+		return
+
+	if (NetProps.GetPropInt( player, "m_bIsOnThirdStrike" ) == 0 && player.GetHealth() < player.GetMaxHealth() / 4) {
+		player.SetReviveCount( 0 )
+		NetProps.SetPropInt( player, "m_isGoingToDie", 1 )
+	}
+}
+
+function CheckHealthAfterLedgeHang( userid ) {
+	local player = GetPlayerFromUserID( userid )
+	if (!player || !player.IsSurvivor())
+		return
+
+	if (player.GetHealth() < player.GetMaxHealth() / 4) {
+		player.SetReviveCount( 0 )
+		NetProps.SetPropInt( player, "m_isGoingToDie", 1 )
+	}
+}
+
+function OnGameEvent_revive_success( params ) {
+	local player = GetPlayerFromUserID( params.subject )
+
+	if (!params.ledge_hang || !player || !player.IsSurvivor())
+		return
+
+	if (NetProps.GetPropInt( player, "m_bIsOnThirdStrike" ) == 0)
+		EntFire( "worldspawn", "RunScriptCode", "g_ModeScript.CheckHealthAfterLedgeHang(" + params.subject + ")", 0.1 )
+}
+
+function OnGameEvent_bot_player_replace( params ) {
+	local player = GetPlayerFromUserID( params.player )
+
+	if (!player || NetProps.GetPropInt( player, "m_bIsOnThirdStrike" ) == 1)
+		return
+
+	StopSoundOn( "Player.Heartbeat", player )
 }
 
 function Update() {
 	if (SessionState.LeftSafeAreaThink)
 		LeftSafeAreaThink()
 	if (Director.GetCommonInfectedCount() > 0) {
-		local infected = null
-		while (infected = Entities.FindByClassname(infected, "infected")) {
-			if (infected.IsValid())
-				infected.Kill()
-		}
+		for (local infected; infected = Entities.FindByClassname( infected, "infected" );)
+			infected.Kill()
 	}
 
 	SessionOptions.RecalculateHealthDecay()
