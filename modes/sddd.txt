@@ -6,7 +6,7 @@ sddd
 	DisplayTitle		"Special Delivery Death's Door"
 	ShortDescription	"Isn't it unfair how only you can drop those specials in one go?"
 	Description			"Two of the best mutations now combined for a more challenging experience!"
-	Author				"Jack Bauer ︻デ▬— and ℜichard"
+	Author				"Jack Bauer ︻デ▬—— and ℜichard"
 	Image				vgui/sddd
 
 	convar
