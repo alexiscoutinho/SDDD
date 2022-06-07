@@ -2,7 +2,7 @@ AddonInfo
 {
 	addonSteamAppID		550
 	addonTitle			"Special Delivery Death's Door"
-	addonVersion		3.0
+	addonVersion		3.1
 	addonAuthor			"Jack Bauer ︻デ▬—— and ℜichard"
 	addonAuthorSteamID	76561198046359406
 	addonSteamGroupName	Flemis
