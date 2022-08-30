@@ -168,17 +168,12 @@ function OnGameEvent_gauntlet_finale_start( params ) {
 		DirectorOptions.cm_MaxSpecials = 8
 }
 
-function OnGameEvent_player_spawn( params ) {
-	local player = GetPlayerFromUserID( params.userid )
-
-	if (!player || player.IsSurvivor())
-		return
-
-	local zombieType = player.GetZombieType()
+function OnSpecialSpawn( special ) {
+	local zombieType = special.GetZombieType()
 	if (zombieType > 6)
 		return
 
-	local modelName = player.GetModelName()
+	local modelName = special.GetModelName()
 
 	if (!SessionState.ModelCheck[ zombieType - 1 ]) {
 		if (zombieType == 2 && !("community1_no_female_boomers" in getroottable())) {
@@ -214,22 +209,11 @@ function OnGameEvent_player_spawn( params ) {
 	local randomModel = zombieModels[ randomElement ]
 	zombieModels.remove( randomElement )
 
-	player.SetModel( randomModel )
+	special.SetModel( randomModel )
 }
 
 function OnGameEvent_round_start( params ) {
 	Convars.SetValue( "pain_pills_decay_rate", 0.0 )
-}
-
-function OnGameEvent_player_hurt_concise( params ) {
-	local player = GetPlayerFromUserID( params.userid )
-	if (!player || !player.IsSurvivor() || player.IsHangingFromLedge())
-		return
-
-	if (NetProps.GetPropInt( player, "m_bIsOnThirdStrike" ) == 0 && player.GetHealth() < player.GetMaxHealth() / 4) {
-		player.SetReviveCount( 0 )
-		NetProps.SetPropInt( player, "m_isGoingToDie", 1 )
-	}
 }
 
 function OnGameEvent_defibrillator_used( params ) {
@@ -237,38 +221,17 @@ function OnGameEvent_defibrillator_used( params ) {
 	if (!player || !player.IsSurvivor())
 		return
 
-	player.SetHealth( 24 )
-	player.SetHealthBuffer( 36 )
-	player.SetReviveCount( 0 )
-	NetProps.SetPropInt( player, "m_isGoingToDie", 1 )
-}
-
-function CheckHealthAfterLedgeHang( userid ) {
-	local player = GetPlayerFromUserID( userid )
-	if (!player || !player.IsSurvivor())
-		return
-
-	if (player.GetHealth() < player.GetMaxHealth() / 4) {
-		player.SetReviveCount( 0 )
-		NetProps.SetPropInt( player, "m_isGoingToDie", 1 )
-	}
-}
-
-function OnGameEvent_revive_success( params ) {
-	local player = GetPlayerFromUserID( params.subject )
-	if (!params.ledge_hang || !player || !player.IsSurvivor())
-		return
-
-	if (NetProps.GetPropInt( player, "m_bIsOnThirdStrike" ) == 0)
-		EntFire( "worldspawn", "RunScriptCode", "g_ModeScript.CheckHealthAfterLedgeHang(" + params.subject + ")", 0.1 )
+	player.SetHealth( 1 )
+	player.SetHealthBuffer( 99 )
 }
 
 function OnGameEvent_bot_player_replace( params ) {
 	local player = GetPlayerFromUserID( params.player )
-	if (!player || NetProps.GetPropInt( player, "m_bIsOnThirdStrike" ) == 1)
+	if (!player)
 		return
 
-	StopSoundOn( "Player.Heartbeat", player )
+	if (player.GetHealth() >= player.GetMaxHealth() / 4)
+		StopSoundOn( "Player.Heartbeat", player )
 }
 
 function OnGameEvent_player_complete_sacrifice( params ) {
@@ -280,6 +243,68 @@ function OnGameEvent_player_complete_sacrifice( params ) {
 	NetProps.SetPropInt( player, "m_isIncapacitated", 1 )
 }
 
+function HealthEffectsThink() {
+	if (self.IsHangingFromLedge())
+		return
+
+	local health = self.GetHealth()
+
+	if (health >= self.GetMaxHealth() / 4) {
+		if (HeartbeatOn) {
+			StopSoundOn( "Player.Heartbeat", self )
+			HeartbeatOn = false
+
+			if (NetProps.GetPropInt( self, "m_bIsOnThirdStrike" ) == 1) {
+				NetProps.SetPropInt( self, "m_bIsOnThirdStrike", 0 )
+				NetProps.SetPropInt( self, "m_isGoingToDie", 0 )
+			}
+		}
+	}
+	else if (health > 1) {
+		if (!HeartbeatOn) {
+			EmitSoundOn( "Player.Heartbeat", self )
+			HeartbeatOn = true
+		}
+		else if (NetProps.GetPropInt( self, "m_bIsOnThirdStrike" ) == 1) {
+			NetProps.SetPropInt( self, "m_bIsOnThirdStrike", 0 )
+			NetProps.SetPropInt( self, "m_isGoingToDie", 0 )
+		}
+	}
+	else {
+		if (NetProps.GetPropInt( self, "m_bIsOnThirdStrike" ) == 0) {
+			NetProps.SetPropInt( self, "m_bIsOnThirdStrike", 1 )
+			NetProps.SetPropInt( self, "m_isGoingToDie", 1 )
+
+			if (!HeartbeatOn) {
+				EmitSoundOn( "Player.Heartbeat", self )
+				HeartbeatOn = true
+			}
+		}
+	}
+}
+
+function OnSurvivorSpawn( survivor ) {
+	survivor.ValidateScriptScope()
+	local scope = survivor.GetScriptScope()
+	scope.HeartbeatOn <- false
+	scope["HealthEffectsThink"] <- HealthEffectsThink
+	AddThinkToEnt( survivor, "HealthEffectsThink" )
+}
+
+function OnGameEvent_player_death( params ) {
+	if (!("userid" in params))
+		return
+
+	local player = GetPlayerFromUserID( params.userid )
+	if (!player)
+		return
+
+	if (NetProps.GetPropInt( player, "m_iTeamNum" ) == 2) {
+		StopSoundOn( "Player.Heartbeat", player )
+		AddThinkToEnt( player, null )
+	}
+}
+
 if (!Director.IsSessionStartMap()) {
 	function PlayerSpawnDeadAfterTransition( userid ) {
 		local player = GetPlayerFromUserID( userid )
@@ -288,8 +313,6 @@ if (!Director.IsSessionStartMap()) {
 
 		player.SetHealth( 24 )
 		player.SetHealthBuffer( 26 )
-		player.SetReviveCount( 0 )
-		NetProps.SetPropInt( player, "m_isGoingToDie", 1 )
 	}
 
 	function PlayerSpawnAliveAfterTransition( userid ) {
@@ -326,6 +349,19 @@ if (!Director.IsSessionStartMap()) {
 		else
 			EntFire( "worldspawn", "RunScriptCode", "g_ModeScript.PlayerSpawnAliveAfterTransition(" + params.userid + ")", 0.1 )
 	}
+}
+
+function OnGameEvent_player_spawn( params ) {
+	local player = GetPlayerFromUserID( params.userid )
+	if (!player)
+		return
+
+	local teamNum = NetProps.GetPropInt( player, "m_iTeamNum" )
+
+	if (teamNum == 3)
+		OnSpecialSpawn( player )
+	else if (teamNum == 2)
+		OnSurvivorSpawn( player )
 }
 
 function Update() {
