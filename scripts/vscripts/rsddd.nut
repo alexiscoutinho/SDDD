@@ -225,13 +225,24 @@ function OnGameEvent_defibrillator_used( params ) {
 	player.SetHealthBuffer( 99 )
 }
 
+function OnGameEvent_player_bot_replace( params ) {
+	local player = GetPlayerFromUserID( params.player )
+	if (!player)
+		return
+
+	StopSoundOn( "Player.Heartbeat", player )
+	AddThinkToEnt( player, null )
+}
+
 function OnGameEvent_bot_player_replace( params ) {
 	local player = GetPlayerFromUserID( params.player )
 	if (!player)
 		return
 
 	if (player.GetHealth() >= player.GetMaxHealth() / 4)
-		StopSoundOn( "Player.Heartbeat", player )
+		DoEntFire( "!self", "RunScriptCode", "StopSoundOn( \"Player.Heartbeat\", self )", 0.1, null, player ) // to work with sb_takecontrol
+	else
+		player.GetScriptScope().HeartbeatOn = true
 }
 
 function OnGameEvent_player_complete_sacrifice( params ) {
@@ -299,7 +310,7 @@ function OnGameEvent_player_death( params ) {
 	if (!player)
 		return
 
-	if (NetProps.GetPropInt( player, "m_iTeamNum" ) == 2) {
+	if (player.IsSurvivor()) {
 		StopSoundOn( "Player.Heartbeat", player )
 		AddThinkToEnt( player, null )
 	}
