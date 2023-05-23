@@ -5,7 +5,9 @@ rsddd
 
 	DisplayTitle		"Realism Special Delivery Death's Door"
 	ShortDescription	"The ultimate Special Delivery experience."
-	Description			"Two of the best mutations and mode now combined for an even more challenging experience!"
+	Description			"Two of the best mutations and mode now combined for an even more challenging experience!
+
+The internal mode name for use in the console is rsddd."
 	Author				"Jack Bauer ︻デ▬—— and ℜichard"
 	Image				vgui/rsddd
 

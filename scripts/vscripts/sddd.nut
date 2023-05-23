@@ -350,15 +350,12 @@ if (!Director.IsSessionStartMap()) {
 			ClientPrint( null, 5, "ERROR:\x01 PlayerSpawnAliveAfterTransition" )
 			return
 		}
-		local maxHealth = player.GetMaxHealth()
 		local oldHealth = player.GetHealth()
-		local maxHeal = maxHealth / 2
+		local maxHeal = player.GetMaxHealth() / 2
 		local healAmount = 0
 
-		if (oldHealth < maxHeal)
+		if (oldHealth < maxHeal) {
 			healAmount = floor( (maxHeal - oldHealth) * 0.8 + 0.5 )
-
-		if (healAmount > 0) {
 			player.SetHealth( oldHealth + healAmount )
 			local bufferHealth = player.GetHealthBuffer() - healAmount
 			if (bufferHealth < 0.0)
@@ -379,9 +376,9 @@ if (!Director.IsSessionStartMap()) {
 			return
 
 		if (NetProps.GetPropInt( player, "m_lifeState" ) == 2)
-			EntFire( "worldspawn", "RunScriptCode", "g_ModeScript.PlayerSpawnDeadAfterTransition(" + params.userid + ")", 0.0 )
+			EntFire( "worldspawn", "RunScriptCode", "g_ModeScript.PlayerSpawnDeadAfterTransition(" + params.userid + ")" )
 		else
-			EntFire( "worldspawn", "RunScriptCode", "g_ModeScript.PlayerSpawnAliveAfterTransition(" + params.userid + ")", 0.0 )
+			EntFire( "worldspawn", "RunScriptCode", "g_ModeScript.PlayerSpawnAliveAfterTransition(" + params.userid + ")" )
 	}
 }
 

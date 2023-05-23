@@ -5,7 +5,9 @@ sddd
 
 	DisplayTitle		"Special Delivery Death's Door"
 	ShortDescription	"Isn't it unfair how only you can drop those specials in one go?"
-	Description			"Two of the best mutations now combined for a more challenging experience!"
+	Description			"Two of the best mutations now combined for a more challenging experience!
+
+The internal mode name for use in the console is sddd."
 	Author				"Jack Bauer ︻デ▬—— and ℜichard"
 	Image				vgui/sddd
 
